@@ -14,7 +14,7 @@ Status: `[ ]` not started · `[~]` in progress · `[x]` done. Phases map to the 
 
 ## Phase 3 — Design
 - [ ] Decide the target spec version and scope (decision record in `planning-design/decisions/`)
-- [ ] Draft the first SAO design in `planning-design/`
+- [~] Draft the first SAO designs in `planning-design/`: briefs prepped for [RTC + GPS](planning-design/rtc-gps/README.md), [RNG](planning-design/rng/README.md), [splitter](planning-design/splitter/README.md) (see [system overview](planning-design/system-overview.md)); owner answers to each brief's open questions still needed
 - [ ] Schematic and PCB in `workbench/hardware/`
 
 ## Phase 4 — Build

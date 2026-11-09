@@ -12,6 +12,9 @@ Read Badge.team's binary descriptor page, the v1.69bis article, the Simple Add-O
 - The "32-bit address length" text really is on the Badge.team page.
 - AND!XOR format found: year / maker / type / data, no magic.
 
+## 2026-11-09 — Parts research for the three SAO projects
+Datasheet/vendor-page research feeding the briefs in [planning-design/](../planning-design/README.md): RTC and GPS parts ([rtc-gps](../planning-design/rtc-gps/README.md)), entropy sources and SP 800-90B pipeline ([rng](../planning-design/rng/README.md)), I2C fan-out and power-path parts ([splitter](../planning-design/splitter/README.md)). Sourcing and prices came from cached snapshots and must be rechecked live.
+
 ## Open questions
 - Exact current limits per badge
 - I2C address conventions and conflicts (known so far: `0x50` ID EEPROM, MCP23017 `0x20` in AND!XOR designs)
@@ -29,3 +32,7 @@ Read Badge.team's binary descriptor page, the v1.69bis article, the Simple Add-O
 - [ ] NXP UM10204 timing figures (1000 ns / 300 ns rise times) not re-read
 - [ ] Wokwi paid-plan pricing, atopile pricing (not verified in the research pass)
 - [ ] KiCad CLI flags against the installed version
+- [ ] Parts research: DS3231 datasheet (Analog PDFs would not download), AB1805 I2C address, I2C client mode of CH32V003 / ATtiny1616 / STM32C011 from reference manuals, JST-SH Qwiic pin order, whether STEMMA QT boards pull up to 5 V, TPS2051C at 3.3 V, TPS62840 3.3 V VSET option
+- [ ] RNG: conductive fabric options (EeonTex, silver/steel fabric, conductive thread) were not researched; 3M Velostat datasheet not opened; measure real min-entropy of the fabric before committing to the design
+- [ ] Indoor GPS time-to-first-fix at a conference venue (datasheet figures are open-sky)
+- [ ] Pin-1 convention conflict (v1.69bis square pad = GND vs Simple Add-On = VCC) matters for splitter and adapters
