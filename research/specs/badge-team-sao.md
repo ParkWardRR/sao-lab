@@ -3,7 +3,7 @@
 - **Source:** <https://badge.team/docs/standards/sao/>
 - **Captured:** 2026-11-09 (page last modified 2026-11-06, upstream commit `27ad94c`)
 - **Status of this file:** faithful restatement of the page, with our notes marked **Note**. Not a verbatim copy.
-- **Not captured:** the child page "Binary SAO descriptor" (header `LIFE`). Linked from the page, see [open questions](../research-log.md).
+- **Child page:** "Binary SAO descriptor" (header `LIFE`) is captured in [badge-team-binary-descriptor.md](badge-team-binary-descriptor.md).
 
 ## Summary
 
@@ -36,7 +36,7 @@ Badge.team's standard defines the connector, the pinout, and an optional I2C EEP
 
 An add-on may provide an **EEPROM at I2C address `0x50`**.
 
-- Both small EEPROMs (**8-bit** memory address) and larger ones (**16-bit** address) can be used. The page says "32-bit address length" in two places; that is almost certainly a typo for 16-bit, since the very next section and the hazard below both talk about 16-bit reads. **Note:** to confirm against the binary-descriptor page.
+- Both small EEPROMs (**8-bit** memory address) and bigger ones can be used. The page literally says "bigger (**32-bit** address length)" (re-read 2026-11-09). That is almost certainly an error for 16-bit, since the same page's safe procedure and hazard both talk about 16-bit addresses and real I2C EEPROMs use 1- or 2-byte addresses.
 - **Hazard:** small EEPROMs interpret a read using a 16-bit address as a **write** command, per the page. People can accidentally overwrite data in small EEPROMs this way. **Enabling write-protect on small identification EEPROMs is strongly recommended.**
 
 ### Safe identification procedure
@@ -64,14 +64,14 @@ Bytes 1 to 4 as ASCII. Byte 1 is ignored on read, so the match is on the last th
 
 | 1 | 2 | 3 | 4 | Description | Documentation |
 |---|---|---|---|-------------|---------------|
-| `L` | `I` | `F` | `E` | Binary descriptor | On the Badge.team site |
-| `J` | `S` | `O` | `N` | JSON text descriptor | none linked |
+| `L` | `I` | `F` | `E` | Binary descriptor | [badge-team-binary-descriptor.md](badge-team-binary-descriptor.md) (upstream `/docs/standards/sao/binary_descriptor/`) |
+| `J` | `S` | `O` | `N` | JSON text descriptor | none upstream; defined in [badge-addon-id.md](badge-addon-id.md) |
 | `T` | `E` | `A` | `M` | Reserved for Badge.team use | none |
 
 **Note:** since byte 1 is ignored, the matched part is `IFE`, `SON`, `EAM`.
 
 ## Notes and gaps
 
-- The page has no electrical limits (no current budget, no signal-voltage ceiling, no GPIO series-resistor rule). Those come from the v1.69bis text, see [electrical constraints](electrical-and-interop.md).
+- The page has no electrical limits (no current budget, no signal-voltage ceiling, no GPIO series-resistor rule). Those come from the v1.69bis text, see [v1.69bis.md](v1.69bis.md) and [electrical constraints](electrical-and-interop.md).
 - Identification is optional. Many hosts will not probe `0x50`, so an EEPROM is useful but is not universal auto-detection. See [electrical-and-interop.md](electrical-and-interop.md#identification-support-is-not-universal).
 - Stray typos on the page: trailing `\` after "format the addon", "accidently", "determined unformatted".

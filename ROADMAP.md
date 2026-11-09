@@ -3,8 +3,8 @@
 Status: `[ ]` not started · `[~]` in progress · `[x]` done. Phases map to the goals in the [README](README.md).
 
 ## Phase 1 — Spec research
-- [~] Collect SAO spec versions (v1.69bis and later Simple Add-On revisions) into `research/specs/` (Badge.team v4.2terbo captured; v1.69bis, Simple Add-On, badge addon id still to capture)
-- [ ] Write up differences between versions
+- [~] Collect SAO spec versions (v1.69bis and later Simple Add-On revisions) into `research/specs/` (v1.69bis, Simple Add-On v2, Badge.team v4.2terbo and `LIFE`, badge-addon-id and AND!XOR captured)
+- [x] Write up differences between versions (lineage table in `research/specs/README.md`)
 - [ ] Resolve open questions in [`research/research-log.md`](research/research-log.md)
 
 ## Phase 2 — Badge survey

@@ -2,7 +2,7 @@
 
 Consolidated from the Badge.team page ([capture](badge-team-sao.md)) and a secondary research pass (pasted 2026-11-09) that cites the original v1.69bis write-up, the Simple Add-On hackaday.io project and the NXP I2C spec.
 
-**Provenance:** rows tagged **[BT]** come from Badge.team, **[v1.69bis]** from the 2019 Hackaday article, **[NXP]** from UM10204. Everything marked *(unverified)* was cited by the research pass and **not yet checked by us against the primary source**. Re-check before relying on a number in a design.
+**Provenance:** rows tagged **[BT]** come from Badge.team, **[v1.69bis]** from the 2019 Hackaday article ([verified 2026-11-09](v1.69bis.md)), **[NXP]** from UM10204 (not re-read by us). Check the primary source before relying on a number in a design.
 
 ## Sources
 
@@ -25,16 +25,16 @@ The hackaday.io footprint resource distinguishes badge-side and SAO-side footpri
 | Constraint | Requirement / consequence | Source |
 |---|---|---|
 | Supply | Nominal 3.3 V. Do not assume a 5 V rail. | [BT] |
-| Signal voltage | No signals above 3.6 V. Our parts may be stricter. | [v1.69bis] *(unverified)* |
-| GPIO driven by the SAO | At least 330 ohm series resistance. Not a substitute for correct levels or bus ownership. | [v1.69bis] *(unverified)* |
-| Power ceiling | "1.1 millihorsepower" is about 0.82 W, roughly 250 mA at 3.3 V. Not proof every badge can supply that at every port at once. | [v1.69bis] *(unverified)* |
-| Power-only add-on | Leave unused data/GPIO unconnected. | [v1.69bis] *(unverified)* |
+| Signal voltage | No signals above 3.6 V. Our parts may be stricter. | [v1.69bis] |
+| GPIO driven by the SAO | MUST go through at least 330 ohm. Not a substitute for correct levels or bus ownership. | [v1.69bis] |
+| Power ceiling | "1.1 millihorsepower". The article gives no W or mA; 0.82 W / ~250 mA at 3.3 V is our own conversion (reader comments made the same). Not proof every badge can supply that at every port at once. | [v1.69bis] |
+| Power-only add-on | Use only VCC and GND; "other pins should be NC". | [v1.69bis] |
 | Backfeed | Never feed the host through the SAO power pin. Battery/USB-powered SAOs need a deliberate power-path isolation. | [BT] |
 | I2C | Open-drain SDA/SCL, pull-ups, timing and loading per NXP. | [NXP] |
-| UART | Historical convention: GPIO1 = badge TX / SAO RX, GPIO2 = badge RX / SAO TX, suggested 115200 baud. Needs host cooperation; can fail on shared GPIO wiring. | [v1.69bis] *(unverified)* |
+| UART | Historical convention: GPIO1 = badge TX / SAO RX, GPIO2 = badge RX / SAO TX, suggested 115200 baud. Needs host cooperation; can fail on shared GPIO wiring. | [v1.69bis] |
 | GPIO1/GPIO2 alternates | WS2812 / APA102 data and clock, interrupt input. | [BT] |
 
-**Check:** 1.1 mhp: 1 hp is 745.7 W, so 1.1 mhp = 0.82 W; 0.82 W / 3.3 V = 249 mA. The arithmetic in the research pass holds.
+**Check:** 1.1 mhp: 1 hp is 745.7 W, so 1.1 mhp = 0.82 W; 0.82 W / 3.3 V = 249 mA. The conversion is ours, not the spec's.
 
 ### Three separate compatibility claims
 
