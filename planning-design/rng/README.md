@@ -15,24 +15,60 @@ An SAO that harvests entropy from a piece of fabric clamped between two binder c
 - Plan for a **low or even near-zero assessed min-entropy per sample** from the fabric alone, and measure it. A realistic guess is 0.1 to 0.5 bit/sample at 1 to 10 kS/s, so roughly 100 to 5,000 bits/s before conditioning *(our estimate, needs a bench measurement)*.
 - The clips are therefore best treated as a **supplementary entropy source that is mixed in**, plus a fun physical interface. They are the headline feature, not the sole security basis.
 
+### What to measure (decision of 2026-11-09)
+
+Entropy lives in the **fluctuation** of the signal, not its level. The DC resistance of the fabric is slow, predictable and attacker-influenceable; the part worth harvesting is the contact noise on top of it. Three design rules follow, all drawn up as the front end below:
+
+1. **Measure fluctuations, not level:** AC-couple the divider and put a gain stage ahead of the ADC, so the ADC sees the noise and not the drift. Without gain the MCU ADC mostly digitises its own noise (a 12-bit LSB is about 806 uV; 100 kOhm Johnson noise is about 4 uV in 10 kHz).
+2. **Measure differentially:** two fabric pieces (or one plus a fixed resistor) as a pair, so temperature, mains pickup and supply ripple cancel and what remains is closer to the independent part of the signal.
+3. **Run several channels and mix them:** resistance noise, capacitance and tribo voltage fail in different ways. Each channel has its **own** health tests; a failed channel is dropped and the pool carries on.
+
+Candidate channels:
+
+| Ch | Property | Read by | Fails when |
+|---|---|---|---|
+| R | resistance fluctuation (contact noise), differential, AC-coupled + gain | ADC | clips shorted/open, mains pickup, saturation |
+| C | capacitance between the clips (fabric as electrode/dielectric) | RC charge time on a GPIO, timed (PIO on RP2350) | humidity step, hand proximity, too-slow timer resolution |
+| T | triboelectric voltage while the fabric is rubbed or flexed | high-impedance buffer into ADC | fabric not moving (then the signal is nothing), ESD |
+| J | thermal (Johnson) noise floor | same amp as R, high gain, differential | amplifier noise dominates; probably unreachable on a SAO, include only as a bench measurement |
+
+*Excess (contact) noise in resistive carbon composites generally grows with bias current, so more bias gives the amplifier more signal. **Unverified for these fabrics**: it is general physics, not tested, and the bias is capped by the power budget and by heating of the fabric. The bench test below measures it (bias sweep).*
+
+Caveat that does not change: every channel is partly environmental and can be influenced by someone handling the clips. The fabric is still a supplementary source mixed with the MCU's TRNG; the credited entropy comes from measurement.
+
 ## Recommended architecture *(recommendation)*
 
 ```mermaid
 flowchart LR
-    F[Fabric between clips] --> AFE[Bias divider + ESD + RC filter]
-    AFE --> ADC[MCU ADC]
-    TRNG[On-chip TRNG or second noise source] --> POOL
-    ADC --> HT[Health tests: repetition count + adaptive proportion]
-    HT --> POOL[SHA-256 conditioner / pool]
+    FA[Fabric A] --> DIFF[Differential front end: bias, HPF, gain]
+    FB[Fabric B or fixed R] --> DIFF
+    DIFF --> ADCR[ADC ch R]
+    FA --> CAP[RC charge-time timer ch C]
+    FA --> TRI[High-Z buffer ch T] --> ADCT[ADC ch T]
+    ADCR --> HTR[Health tests R]
+    CAP --> HTC[Health tests C]
+    ADCT --> HTT[Health tests T]
+    TRNG[On-chip TRNG, always on] --> HTV[Vendor health checks]
+    HTR --> POOL
+    HTC --> POOL
+    HTT --> POOL
+    HTV --> POOL[SHA-256 conditioner / pool]
     POOL --> DRBG[HMAC-DRBG, periodic reseed]
     DRBG --> FIFO[Byte FIFO]
     FIFO --> I2C[I2C target registers]
-    HT --> ST[Status + health flags]
+    HTR --> ST[Per-channel status + health flags]
+    HTC --> ST
+    HTT --> ST
     ST --> I2C
     ST --> G2[GPIO2 data-ready, active low]
 ```
 
-Pipeline (the minimal credible one from the research): raw samples, continuous health tests (SP 800-90B repetition count and adaptive proportion), offline min-entropy estimate with NIST's `ea_non_iid` on at least 1 M raw samples, SHA-256 conditioning with at least 2x input entropy, HMAC-DRBG expansion with periodic reseed.
+Pipeline (the minimal credible one from the research): raw samples per channel, continuous per-channel health tests (SP 800-90B repetition count and adaptive proportion), offline min-entropy estimate per channel with NIST's `ea_non_iid` on at least 1 M raw samples, SHA-256 conditioning with at least 2x input entropy, HMAC-DRBG expansion with periodic reseed.
+
+Mixing rules:
+- **Each channel has its own health tests and its own entropy credit.** A channel that fails is dropped from the pool and flagged; the others and the on-chip TRNG continue. If every fabric channel fails the device still runs on the TRNG and says so in STATUS.
+- **Credit conservatively:** use the lowest assessed min-entropy per channel, and do not count channels twice if they are correlated. Cross-correlate the channels offline during the bench test, and only credit the sum for channels that test independent.
+- Raw samples stay in separate buffers per channel; only the conditioner sees the pool.
 
 ### MCU choice (decision needed, see [open questions](#open-questions))
 
@@ -45,13 +81,33 @@ Pipeline (the minimal credible one from the research): raw samples, continuous h
 
 Second independent source if not on RP2350: reverse-biased zener avalanche (Betrusted uses a 15 V zener from a boost converter at about 0.53 mA, [writeup](https://betrusted.io/avalanche-noise)). Costs area and a boost converter; not for revision A.
 
-## Analog front end sketch
+## Analog front end *(recommendation, sketch)*
 
-- Divider from 3.3 V through a fixed resistor near the fabric's nominal resistance into the ADC pin; 10 to 100 kOhm series resistor; about 100 nF anti-alias.
-- **ESD:** users will touch the clips. Series resistor, TVS (for example ESD5Z3.3) and Schottky clamps to the rails.
-- 50/60 Hz will dominate. Shield or guard the lead, AC-couple or high-pass; if you want to see actual thermal noise you need an op-amp with gain of about 100 to 1000.
-- Leave a footprint for a second element (reference fabric, or fixed resistor) to compare against.
-- Clip leads: 2-pin 2.54 mm header or screw terminal so any clip/lead works. Make this a **separate, clearly labeled connector**, not SAO pins.
+### Channel R: differential resistance noise
+
+- **Bias:** fabric A and fabric B (or A and a fixed resistor of similar value) each in a divider from a low-noise bias node; the differential pair goes to the amplifier. Bias current is **selectable** (jumper or DNP resistor set, later a DAC/PWM) so the bench test can sweep it. Start near 10 to 50 uA *(our guess)*.
+- **AC coupling:** a high-pass of about 1 to 10 Hz to remove drift, then gain. Re-bias the signal to mid-rail (VCC/2, buffered) because the board is single-supply 3.3 V.
+- **Gain:** about 100 to 1000, adjustable by DNP resistors. Target: noise of several LSB peak-to-peak at the ADC without clipping. Worked check: 100 kOhm Johnson is about 4 uV over 10 kHz, so Johnson alone needs gain near 200 just to reach one LSB; contact noise should be larger, which is what the bench test decides.
+- **Op-amp selection criteria (part not picked):** rail-to-rail in/out, 3.3 V, low input bias current, low voltage-noise density, low supply current, available at JLCPCB. Pick from the bench results.
+- **Anti-alias:** low-pass at about 1/2 the sample rate before the ADC; sample at 1 to 10 kS/s.
+- **Mains:** the differential pair rejects common-mode 50/60 Hz; also add a notch or higher HPF corner if the bench shows residual hum.
+
+### Channel C: capacitance
+
+Fabric A against the clip lead as a plate pair; charge through a known resistor from a GPIO and time to a threshold, or run a small RC oscillator and count. Timer resolution (PIO on RP2350) sets the noise floor. Slow and low-rate; the point is an independent failure mode, not bandwidth.
+
+### Channel T: triboelectric
+
+High-impedance unity-gain buffer from a clip into an ADC pin, with a bleed resistor to bias. Only produces signal while the fabric moves. ESD is the hazard here: users will touch the clips.
+
+### Common to all channels
+
+- **ESD:** series resistor, TVS (for example ESD5Z3.3) and Schottky clamps to the rails on every clip lead.
+- **Guard / shield:** shielded or twisted lead; guard ring around the high-impedance nodes.
+- **Layout:** analog section away from the MCU's switching; supply ripple matters because differential rejects common-mode ripple only up to the matching of the two arms.
+- **Connector:** a separate, clearly labeled 2 to 4 pin connector (clip A, clip B/reference, shield, optional), not SAO pins.
+- **Pin budget:** RP2350A has few ADC inputs; this needs R, T and temperature/reference monitoring. Count against the exact package before choosing RP2350A vs B *(ADC input counts unverified in our research pass, check the datasheet)*.
+- **Realistic rate:** at 1 to 10 kS/s and 0.1 to 0.5 assessed bits/sample, expect roughly 100 to 5,000 bits/s of raw min-entropy per channel before conditioning *(our estimate; the bench test replaces it)*.
 
 ## I2C interface (draft, ours)
 
@@ -65,11 +121,14 @@ Fits the intelligent-SAO draft in [electrical-and-interop.md](../../research/spe
 | 0x03 | FIFO_LEVEL | bytes available |
 | 0x04 | READ | pops conditioned bytes |
 | 0x05 | RESEED_CNT | reseed counter |
-| 0x06 | ENTROPY_EST | assessed bits/sample, 1/256 fixed point |
+| 0x06 | ENTROPY_EST | assessed bits/sample of the pool credit, 1/256 fixed point |
+| 0x07 | CH_ENABLE | bit0 R, bit1 C, bit2 T, bit3 on-chip TRNG; sources included in the pool |
+| 0x08 | CH_HEALTH | per-channel health: bit set = that channel failed its health tests and is excluded |
+| 0x09 | CH_EST[0..3] | per-channel assessed bits/sample, 1/256 fixed point (R, C, T, TRNG) |
 
 Rules:
 - **Consume-on-read:** bytes are never served twice, so two host boards sharing the bus cannot get the same output. A read of n bytes is atomic and n must not exceed FIFO_LEVEL; when empty return an error flag, never zeros presented as data.
-- **Health failure** flushes the FIFO, stops output and sets HEALTH_FAIL.
+- **Channel health failure** drops only that channel from the pool and sets its CH_HEALTH bit; output continues from the remaining sources. **HEALTH_FAIL** (flush FIFO, stop output) is raised only when no source is left healthy, or the on-chip TRNG itself fails.
 - **Raw debug mode** disables conditioned output so raw samples never mix with it.
 - Throughput ceiling is about 11 kB/s at 100 kHz and about 44 kB/s at 400 kHz *(our arithmetic)*; the real limit is the entropy seed rate, not the bus.
 - Reset defaults, byte order and repeated-START behaviour must be written down (see the decisions list in the shared doc).
@@ -81,18 +140,20 @@ May not say: "NIST-compliant", "FIPS", "cryptographic grade", "validated", witho
 
 ## Verification plan
 
-1. Bench: sample the fabric into a file on a dev board (RP2350 Pico 2 or similar) for 1 M+ samples under several conditions (still, tapped, humid, mains nearby).
-2. Run `ea_non_iid` ([NIST tool](https://github.com/usnistgov/SP800-90B_EntropyAssessment)) and take the lowest estimate; also `ent` and dieharder on conditioned output (they cannot prove quality, only catch gross faults).
-3. Native unit tests for health tests, conditioner, DRBG and the register state machine (desktop build first, per [dev-environment](../../research/dev-environment.md)).
-4. Fault injection: clip shorted, clip open, stuck ADC, mains injection; health tests must trip.
-5. Fixture: multiple hosts reading concurrently, bytes never duplicate.
+1. **Channel bench test (go/no-go and design input).** On a dev board with an adjustable analog front end, for **each** channel (R, C, T, J) and for each fabric type, capture 1 M+ raw samples under: still, tapped, flexed, humid, mains cable nearby, clip shorted, clip open. For channel R also **sweep bias current** and **gain**, with the differential pair and with a single-ended baseline, to see what each rule buys.
+2. Run `ea_non_iid` ([NIST tool](https://github.com/usnistgov/SP800-90B_EntropyAssessment)) per channel and take the lowest estimate. Compare against the ADC's own noise floor measured with the input shorted, and drop any channel that does not beat it.
+3. **Cross-channel independence:** cross-correlation and a combined-stream `ea_non_iid` run; credit the sum only for channels that test independent.
+4. `ent` and dieharder on the conditioned output (they cannot prove quality, only catch gross faults).
+5. Native unit tests (desktop build first, per [dev-environment](../../research/dev-environment.md)) for per-channel health tests, the mixing/credit logic, conditioner, DRBG and the register state machine, including channel drop and recovery.
+6. **Fault injection per channel:** clip shorted, clip open, stuck ADC, mains injection, one channel disabled mid-stream; the failing channel must trip its own health bit and the others must keep the pool running.
+7. Fixture: multiple hosts reading concurrently, bytes never duplicate.
 
 ## First-prototype plan
 
-1. Pico 2 + fabric on a breadboard: collect raw data, decide the real entropy rate. **Go/no-go gate for the whole project.**
-2. Firmware core (health tests, conditioner, DRBG, register map) with desktop tests.
-3. KiCad schematic: SAO header, RP2350, flash, crystal, AFE, clip connector, test pads (GND, 3V3, SDA, SCL, ADC).
-4. First board: two-layer, conservative, DNP pull-ups.
+1. **Front-end bench rig:** Pico 2 (or similar) plus a breadboard analog front end: bias/HPF/gain stage with swappable resistors, differential input for two fabric pieces, a capacitance timing pin, a high-Z tribo input. Capture raw data per channel and fabric to a file. **Go/no-go gate for the whole project**, and the source of the front-end component values.
+2. Firmware core (per-channel health tests, mixing, conditioner, DRBG, register map) with desktop tests.
+3. KiCad schematic from the bench-chosen values: SAO header, RP2350, flash, crystal, differential front end with DNP gain/bias options, C and T channels as populated or DNP, clip connector, test pads (GND, 3V3, SDA, SCL, ADC taps, amp output).
+4. First board: two-layer, conservative, DNP pull-ups; analog section placed away from the MCU.
 
 ## Open questions
 
@@ -100,6 +161,9 @@ May not say: "NIST-compliant", "FIPS", "cryptographic grade", "validated", witho
 - Is the fabric conductive/piezoresistive (assumed), or something else?
 - Do you want the fabric to be the only source, or is mixing with an on-chip TRNG acceptable? (Recommended: mix.)
 - Which fabric: need to buy and measure Velostat, silver and steel fabric. EeonTex and conductive thread were not researched *(unverified)*.
+- Two fabric pieces: should the second clip pair be a second fabric piece (more to clamp) or a fixed reference resistor on the board (simpler)? The bench test compares both.
+- How many channels go on the first board: R only, or R + C + T populated? (Recommended: footprints for all, populate per bench results.)
+- RP2350A or RP2350B for ADC pin count *(unverified)*.
 - Do we want an unvalidated "random numbers for fun" device, or a stated target (BSI AIS 31 / SP 800-90B assessment) for the writeup?
 
 ## Sources

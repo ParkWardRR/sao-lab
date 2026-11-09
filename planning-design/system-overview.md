@@ -55,7 +55,7 @@ Put each in `decisions/` as a short record: target spec version (v1.69bis or Sim
 
 ## Build order *(recommendation)*
 
-1. **RNG** breadboard entropy measurement first. It is the go/no-go for the project (the fabric may give near-zero entropy).
+1. **RNG** front-end bench test first (differential, AC-coupled, multi-channel capture and per-channel entropy assessment). It is the go/no-go for the project (the fabric may give near-zero entropy).
 2. **RTC + GPS** dev-board proof (PPS capture, discipline loop).
 3. **Splitter** A+B board, because it is needed to power and chain the other two on a real badge.
 4. Integrate on a real badge and check the address plan.
