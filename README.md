@@ -17,9 +17,12 @@ A small PCB that plugs into a badge through a 2x3 0.1" header (v1.69bis). The pi
 
 ## Layout
 
-- `docs/` — spec notes, badge compatibility, research log
-- `hardware/` — schematics, PCB, 3D parts
-- `firmware/` — add-on firmware and badge-side test code
+| Folder | Purpose |
+|--------|---------|
+| [`research/`](research/) | Spec versions, badge survey, research log, open questions |
+| [`planning-design/`](planning-design/) | Plans, design docs, decision records |
+| [`workbench/`](workbench/) | The things we build: `hardware/` (schematics, PCB, 3D parts) and `firmware/` (add-on firmware, badge-side test code) |
+| [`ROADMAP.md`](ROADMAP.md) | Phases and milestones |
 
 ## Goals
 
@@ -27,3 +30,5 @@ A small PCB that plugs into a badge through a 2x3 0.1" header (v1.69bis). The pi
 2. Survey badges and their SAO ports: voltage, current budget, I2C behaviour.
 3. Design and build our own SAOs.
 4. Build a test harness that checks an SAO against the spec.
+
+See the [roadmap](ROADMAP.md) for how these are sequenced.
