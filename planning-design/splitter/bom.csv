@@ -1,0 +1,12 @@
+ref,qty,description,mfr_part,lcsc,jlc_class,smt,unit_1,unit_100,price_status,notes
+J1,1,Upstream SAO header 2x3 male,generic 2x3 header,C65114,ext,N,0.045,0.036,verified,
+J2-J4,3,Downstream SAO sockets 2x3 female,2x3 female header,C32713304,ext,N,0.155,0.12,verified,through-hole; keyed shrouded variant not priced
+J5,1,USB-C receptacle 16-pin power only,TYPE-C-31-M-12,C165948,ext,Y,0.187,0.13,verified,D+/D- unrouted; 2 x 5.1k CC pulldowns
+U1-U2,2,Ideal diode (badge leg and LDO leg),LM66100DCKR,C2869734,ext,Y,0.21,0.14,verified,
+U3,1,Current-limited load switch on badge leg,TPS2553DBVR,C55266,ext,Y,0.55,0.34,verified,RILIM 180k gives about 129-174 mA
+U4,1,3.3 V LDO from USB 5 V,AP2112K-3.3TRG1,C51118,ext,Y,0.183,0.13,verified,thermal-limited: see power analysis
+Q1,1,N-FET gating TPS2553 EN on VBUS absent,2N7002-class,,ext,Y,0.03,0.025,estimate,
+F1,1,Resettable fuse on downstream rail,polyfuse,,ext,Y,0.10,0.08,estimate,sizing unverified
+D1-D2,2,LEDs (power / fault),NCD0603G1,C84267,ext,Y,0.016,0.011,verified,
+P,12,Caps (10 uF x2 100 uF bulk 100 nF) and resistors (RILIM CC CE pulldown LED),0603/0805,,basic,Y,0.012,0.01,estimate,12 parts; 100 uF max per practical-rule inrush guidance
+U5,0,DNP: hot-swap I2C buffer,TCA4307DGKR,C880333,ext,Y,2.69,2.0,verified,DNP footprint only; ICC 2.5 mA typ (at 5.5 V)

@@ -29,7 +29,7 @@ Goal: automatic choice between badge and USB, with **zero current into the badge
 
 ```mermaid
 flowchart LR
-    BADGE[Badge pin 1 3V3] --> LIM[TPS2553 current limit ~200 mA, FAULT LED]
+    BADGE[Badge pin 1 3V3] --> LIM[TPS2553 current limit ~130-175 mA (RILIM 180k), FAULT LED]
     LIM --> D1[LM66100 ideal diode]
     USB[USB-C 5V VBUS] --> LDO[AP2112K-3.3]
     LDO --> D2[LM66100 ideal diode, CE tied to VOUT]
@@ -50,8 +50,8 @@ Parts, all from datasheets the research pass read:
 | Part | Role | Key facts | Source |
 |---|---|---|---|
 | LM66100 | ideal diode, both legs | 1.5 to 5.5 V, 1.5 A, 79 mOhm at 5 V; CE blocks when CE exceeds VIN by 80 mV; tolerates VIN down to -6 V | [TI](https://www.ti.com/lit/ds/symlink/lm66100.pdf) |
-| TPS2553 | badge-leg current limit | 2.5 to 6.5 V, adjustable 75 mA to 1.7 A, FAULT pin, reverse-voltage comparator | [TI](https://www.ti.com/lit/ds/symlink/tps2553.pdf) |
-| AP2112K-3.3 | USB 5 V to 3.3 V | 600 mA min, 250 mV dropout at 600 mA, foldback short-circuit about 50 mA | [Diodes](https://www.diodes.com/assets/Datasheets/AP2112.pdf) |
+| TPS2553 | badge-leg current limit | 2.5 to 6.5 V, adjustable 75 mA to 1.7 A, FAULT pin, reverse-voltage comparator. Limit (mA) = 23950 / RILIM(kOhm)^0.977 nominal; 180 kOhm gives about 129 to 174 mA, chosen to match the practical per-port rule in the [power analysis](../power-analysis.md) | [TI](https://www.ti.com/lit/ds/symlink/tps2553.pdf) |
+| AP2112K-3.3 | USB 5 V to 3.3 V | 600 mA min, 250 mV dropout at 600 mA, foldback short-circuit about 50 mA. As a linear regulator from 5 V it burns (5 - 3.3) x I: 0.17 W at 100 mA, 0.43 W at 250 mA, so treat USB-path load as limited to about 250 mA until a buck (e.g. TPS62A02) replaces it | [Diodes](https://www.diodes.com/assets/Datasheets/AP2112.pdf) |
 
 JLCPCB: AP2112K-3.3TRG1 [C51118](https://jlcpcb.com/partdetail/C51118) (extended), LM66100DCKR [C2869734](https://lcsc.com/product-detail/power-distribution-switches_texas-instruments-lm66100dckr_C2869734.html), TPS2553DBVR-1 [C111738](https://jlcpcb.com/partdetail/C111738) (extended).
 

@@ -1,0 +1,4 @@
+ref,qty,description,mfr_part,lcsc,jlc_class,smt,unit_1,unit_100,price_status,notes
+U1,1,GNSS module with integrated 15 mm patch,SAM-M10Q-00B,C5443880,ext,Y,20.65,20.15,verified,LCSC has no tier above 10 pcs (20.15 at 10+); stock 102; DigiKey EUR snapshots 14-27 (stale/unverified)
+J1,1,Header 1x7 male,1x7 male header,C53055676,ext,N,0.042,0.033,verified,mates with base J3
+P,6,Decoupling caps,0603,,basic,Y,0.01,0.008,estimate,

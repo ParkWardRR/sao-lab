@@ -1,0 +1,11 @@
+ref,qty,description,mfr_part,lcsc,jlc_class,smt,unit_1,unit_100,price_status,notes
+U1,1,Real-time clock 1 ppm,RV-3028-C7,C3304278,ext,Y,2.79,1.86,verified,LCSC/JLC stock 0-143 on pull: may be unavailable; earlier snapshot listed C3019759
+U2,1,MCU I2C client + GPS UART + PPS capture,ATTINY1616-MNR,C507118,ext,Y,1.34,0.84,verified,TWI client with dual address match confirmed in datasheet; 1.8 mA at 5 MHz 3 V
+U3,1,GPS supply load switch with current limit (default off),TPS2553DBVR,C55266,ext,Y,0.55,0.34,verified,RILIM 232k gives about 100-137 mA limit
+J1,1,SAO header 2x3 male 2.54 mm,generic 2x3 header,C65114,ext,N,0.045,0.036,verified,through-hole
+J2,1,CR1220 holder SMD,KH-BS1220-2,C4943311,ext,Y,0.176,0.139,verified,cell itself not priced (not on JLC)
+J3,1,GPS header 1x7 female (3V3_SW GND TX RX PPS VBCKP EN),1x7 female header,,ext,N,0.07,0.05,estimate,male price C53055676 is 0.042; female priced by proxy
+C1,1,GPS branch bulk cap 22 uF,0805 X5R,,basic,Y,0.05,0.04,estimate,limits inrush on weak rail
+FB1,1,Ferrite bead GPS branch,0603,,basic,Y,0.02,0.015,estimate,
+P,12,Decoupling caps and resistors (pull-ups DNP),0603,,basic,Y,0.01,0.008,estimate,12 parts
+D1,1,Status LED (DNP by default),NCD0603G1,C84267,ext,Y,0.016,0.011,verified,DNP to save current

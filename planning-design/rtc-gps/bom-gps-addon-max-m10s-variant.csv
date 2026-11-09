@@ -1,0 +1,5 @@
+ref,qty,description,mfr_part,lcsc,jlc_class,smt,unit_1,unit_100,price_status,notes
+U1,1,GNSS module external antenna,MAX-M10S-00B,C4153167,ext,Y,11.02,10.76,verified,LCSC stock 828; 10+ tier shown in 100 column
+AN1,1,Ceramic GNSS patch 18x18 through-hole,BWGNSCNX18-18W4,C784395,ext,N,0.71,0.43,verified,gain and ground-plane needs NOT checked; module LNA/SAW and matching UNVERIFIED
+J1,1,Header 1x7 male,1x7 male header,C53055676,ext,N,0.042,0.033,verified,
+P,6,Decoupling caps,0603,,basic,Y,0.01,0.008,estimate,
