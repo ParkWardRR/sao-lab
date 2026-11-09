@@ -3,12 +3,12 @@
 Status: `[ ]` not started · `[~]` in progress · `[x]` done. Phases map to the goals in the [README](README.md).
 
 ## Phase 1 — Spec research
-- [ ] Collect SAO spec versions (v1.69bis and later Simple Add-On revisions) into `research/specs/`
+- [~] Collect SAO spec versions (v1.69bis and later Simple Add-On revisions) into `research/specs/` (Badge.team v4.2terbo captured; v1.69bis, Simple Add-On, badge addon id still to capture)
 - [ ] Write up differences between versions
 - [ ] Resolve open questions in [`research/research-log.md`](research/research-log.md)
 
 ## Phase 2 — Badge survey
-- [ ] Pick the badges to survey
+- [~] Pick the badges to survey (started with the 2026 Supercon Billboard badge)
 - [ ] Record per badge in `research/badges/`: SAO port voltage, current budget, I2C behaviour
 - [ ] Document I2C address conventions and conflicts
 
