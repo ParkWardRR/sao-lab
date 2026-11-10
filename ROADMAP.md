@@ -8,8 +8,8 @@ Status: `[ ]` not started · `[~]` in progress · `[x]` done. Phases map to the 
 - [ ] Resolve open questions in [`research/research-log.md`](research/research-log.md)
 
 ## Phase 2 — Badge survey
-- [~] Pick the badges to survey (started with the 2026 Supercon Billboard badge)
-- [ ] Record per badge in `research/badges/`: SAO port voltage, current budget, I2C behaviour
+- [~] Pick the badges to survey (done so far: 2026 Billboard, 2025 Communicator, 2024 Supercon 8; DEF CON 31/33 only as third-party claims)
+- [~] Record per badge in `research/badges/`: SAO port voltage, current budget, I2C behaviour (power and pull-ups done for the three Supercon badges; `0x50` probing and address conflicts still open)
 - [ ] Document I2C address conventions and conflicts
 
 ## Phase 3 — Design
