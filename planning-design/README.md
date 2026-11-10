@@ -15,7 +15,7 @@ Plans and design docs for what we build in [`../workbench/`](../workbench/).
 
 How the three share a bus, a power budget and an address map: [`system-overview.md`](system-overview.md).
 
-BOMs and power consumption: [`power-analysis.md`](power-analysis.md) (BOM CSVs sit in each project folder).
+BOMs and power consumption: [`POWER.md`](../POWER.md) (BOM CSVs sit in each project folder).
 
 ## Rules every brief follows
 
